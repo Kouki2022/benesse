@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class CalendarScreen extends StatefulWidget {
-
   final int initialCalendarIndex;
   final bool showBottomNavigation;
 
@@ -137,6 +136,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
 
     // Firestoreに保存
+    await _updateFirestore();
+  }
+
+  Future<void> _updateFirestore() async {
     final userDoc = FirebaseFirestore.instance
         .collection('Users')
         .doc('SasqYMwGb1YqpRK3PEcU');
@@ -166,84 +169,84 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('カレンダー: ${_calendarTitles[_currentIndex]}'),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.check),
-          onPressed: () {
-            _handleOkButtonPress(_calendarTitles[_currentIndex]);
-          },
-        ),
-      ],
-    ),
-    body: Column(
-      children: [
-        TableCalendar(
-          firstDay: DateTime.utc(2023, 1, 1),
-          lastDay: DateTime.utc(2024, 12, 31),
-          focusedDay: _focusedDay,
-          calendarFormat: _calendarFormat,
-          selectedDayPredicate: (day) {
-            return isSameDay(_selectedDay, day);
-          },
-          onDaySelected: (selectedDay, focusedDay) {
-            if (!isSameDay(_selectedDay, selectedDay)) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            }
-          },
-          onFormatChanged: (format) {
-            if (_calendarFormat != format) {
-              setState(() {
-                _calendarFormat = format;
-              });
-            }
-          },
-          onPageChanged: (focusedDay) {
-            _focusedDay = focusedDay;
-          },
-          eventLoader: _getEventsForDay,
-        ),
-        const SizedBox(height: 8.0),
-        Expanded(
-          child: _buildEventList(),
-        ),
-      ],
-    ),
-    floatingActionButton: widget.showBottomNavigation 
-      ? FloatingActionButton(
-          onPressed: _showAddEventDialog,
-          child: Icon(Icons.add),
-        )
-      : null,
-    bottomNavigationBar: _buildBottomNavigationBar(),
-  );
-}
-
-Widget? _buildBottomNavigationBar() {
-  if (!widget.showBottomNavigation) {
-    return null;
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('カレンダー: ${_calendarTitles[_currentIndex]}'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              _handleOkButtonPress(_calendarTitles[_currentIndex]);
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          TableCalendar(
+            firstDay: DateTime.utc(2023, 1, 1),
+            lastDay: DateTime.utc(2024, 12, 31),
+            focusedDay: _focusedDay,
+            calendarFormat: _calendarFormat,
+            selectedDayPredicate: (day) {
+              return isSameDay(_selectedDay, day);
+            },
+            onDaySelected: (selectedDay, focusedDay) {
+              if (!isSameDay(_selectedDay, selectedDay)) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              }
+            },
+            onFormatChanged: (format) {
+              if (_calendarFormat != format) {
+                setState(() {
+                  _calendarFormat = format;
+                });
+              }
+            },
+            onPageChanged: (focusedDay) {
+              _focusedDay = focusedDay;
+            },
+            eventLoader: _getEventsForDay,
+          ),
+          const SizedBox(height: 8.0),
+          Expanded(
+            child: _buildEventList(),
+          ),
+        ],
+      ),
+      floatingActionButton: widget.showBottomNavigation 
+        ? FloatingActionButton(
+            onPressed: _showAddEventDialog,
+            child: Icon(Icons.add),
+          )
+        : null,
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
   }
-  return BottomNavigationBar(
-    currentIndex: _currentIndex,
-    onTap: (index) {
-      setState(() {
-        _currentIndex = index;
-      });
-    },
-    items: _calendarTitles
-        .map((title) => BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: title,
-            ))
-        .toList(),
-  );
-}
+
+  Widget? _buildBottomNavigationBar() {
+    if (!widget.showBottomNavigation) {
+      return null;
+    }
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      items: _calendarTitles
+          .map((title) => BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today),
+                label: title,
+              ))
+          .toList(),
+    );
+  }
 
   Widget _buildEventList() {
     final events = _getEventsForDay(_selectedDay ?? _focusedDay);
@@ -274,7 +277,7 @@ Widget? _buildBottomNavigationBar() {
             ),
             trailing: IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _deleteEvent(event),
+              onPressed: () => _showDeleteConfirmationDialog(event),
             ),
           ),
         );
@@ -372,11 +375,40 @@ Widget? _buildBottomNavigationBar() {
     );
   }
 
-  void _deleteEvent(Event event) {
+  void _showDeleteConfirmationDialog(Event event) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('予定の削除'),
+          content: Text('この予定を削除してもよろしいですか？'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('キャンセル'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('削除'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteEvent(event);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteEvent(Event event) async {
     setState(() {
       _allEvents[_currentIndex][_selectedDay ?? _focusedDay]?.remove(event);
     });
-    // Firestoreからも削除する処理を追加する必要
+    
+    // Firestoreからも削除
+    await _updateFirestore();
   }
 }
 

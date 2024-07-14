@@ -97,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+//志望校を表示させる
 class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -136,6 +137,7 @@ class HomeContent extends StatelessWidget {
               ],
             ),
           ),
+          //カレンダー
           Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -168,6 +170,8 @@ class HomeContent extends StatelessWidget {
                     );
                   },
                 ),
+
+                //機能紹介
                 SizedBox(height: 16),
                 Text(
                   '主な機能',
@@ -208,6 +212,7 @@ class HomeContent extends StatelessWidget {
     );
   }
 
+  //志望校カード
   Widget _buildSchoolCard(String rank, String schoolName, String schedule) {
     return Card(
       margin: EdgeInsets.only(bottom: 8),
