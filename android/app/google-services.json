@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "808228911962",
+    "project_id": "benesse0714",
+    "storage_bucket": "benesse0714.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808228911962:android:f2152bb1d3b159c7c61163",
+        "android_client_info": {
+          "package_name": "com.example.benesse1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALrsyKvJy_4pgPjtX_lmOl14G8k65U96I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
