@@ -12,7 +12,7 @@ class _SearchScreenState extends State<SearchScreen> {
   TextEditingController _schoolController = TextEditingController();
   String? _selectedSubject;
 
-  final List<String> _deviationValues = ['50-55', '55-60', '60-65', '65-70', '70以上'];
+  final List<String> _deviationValues = ['50~55', '55~60', '60~65', '65~70', '70以上'];
   final List<String> _likesubject = ['数学', '国語', '英語', '理科', '社会'];
 
   @override
@@ -121,11 +121,25 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                   onPressed: () {
+                    // ここを修正：フォームのバリデーションと検索条件の渡し方を変更
                     if (_formKey.currentState?.validate() ?? false) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SearchResultScreen()),
-                      );
+                      if (_schoolController.text.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SearchResultsList(
+                              schoolName: _schoolController.text,
+                              subject: _selectedSubject,
+                              deviationValue: _selectedDeviationValue,
+                            ),
+                          ),
+                        );
+                      } else {
+                        // 第一志望の高校が空の場合、エラーメッセージを表示
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('第一志望の高校を入力してください')),
+                        );
+                      }
                     }
                   },
                 ),

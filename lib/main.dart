@@ -27,12 +27,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '受験日程プランナー',
+      title: 'Edu-Pass',
       theme: ThemeData(
         primarySwatch: Colors.teal,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
-      home: MyHomePage(title: '受験日程プランナー'),
+      home: MyHomePage(title: 'Edu-Pass'),
     );
   }
 }
